@@ -1,14 +1,13 @@
-const API_URL = '/agro-shop/api';
-
 async function loadCatalog() {
     const response = await fetch(`${API_URL}/machines`);
     const data = await response.json();
     const container = document.getElementById('machines-list');
     
-    if (data.status === 'success') {
+    if (data.status === 'success' && data.data && container) {
+        const machines = data.data;
         container.innerHTML = `
             <div class="machines-grid">
-                ${data.data.map(machine => `
+                ${machines.map(machine => `
                     <div class="machine-card">
                         <h3>${machine.name}</h3>
                         <p><strong>Категория:</strong> ${machine.category}</p>
@@ -20,5 +19,3 @@ async function loadCatalog() {
         `;
     }
 }
-
-document.addEventListener('DOMContentLoaded', loadCatalog);
