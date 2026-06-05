@@ -123,3 +123,25 @@ function initModals() {
     
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
 }
+function initAdminTabs() {
+    const tabButtons = document.querySelectorAll('#admin-tabs .tab-btn');
+    const machinesTab = document.getElementById('admin-machines');
+    
+    if (!tabButtons.length) return;
+    
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            
+            if (machinesTab) machinesTab.style.display = 'none';
+            
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            if (tab === 'machines' && machinesTab) {
+                machinesTab.style.display = 'block';
+                if (typeof loadAdminMachines === 'function') loadAdminMachines();
+            }
+        });
+    });
+}

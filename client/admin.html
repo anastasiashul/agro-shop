@@ -20,16 +20,59 @@
             <a href="index.html">Каталог</a>
             <a href="orders.html">Мои заказы</a>
             <a href="admin.html">Админ-панель</a>
+            <button id="cart-btn">Корзина (<span id="cart-count">0</span>)</button>
         </nav>
         
         <main>
             <h2>Админ-панель</h2>
-            <p>Админ-панели пока нет</p>
+            <div id="admin-tabs">
+                <button class="tab-btn" data-tab="machines">Управление техникой</button>
+            </div>
+            <div id="admin-machines" class="admin-tab active">
+                <button id="add-machine-btn">Добавить технику</button>
+                <div id="admin-machines-list"></div>
+            </div>
         </main>
+        
+        <div id="cart-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Корзина</h2>
+                <div id="cart-items"></div>
+                <div id="cart-total">Итого: 0 ₽</div>
+                <button id="checkout-btn" style="display: none;">Оформить заказ</button>
+            </div>
+        </div>
+        
+        <div id="machine-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="machine-modal-title">Добавить технику</h2>
+                <form id="machine-form">
+                    <input type="hidden" id="machine-id">
+                    <input type="text" id="machine-name" placeholder="Название" required>
+                    <select id="machine-category" required>
+                        <option value="">Выберите категорию</option>
+                        <option value="Тракторы">Тракторы</option>
+                        <option value="Комбайны">Комбайны</option>
+                        <option value="Плуги">Плуги</option>
+                        <option value="Сеялки">Сеялки</option>
+                        <option value="Культиваторы">Культиваторы</option>
+                    </select>
+                    <input type="number" id="machine-price" placeholder="Цена" required>
+                    <textarea id="machine-description" placeholder="Описание"></textarea>
+                    <input type="number" id="machine-stock" placeholder="Количество" value="0">
+                    <button type="submit">Сохранить</button>
+                </form>
+            </div>
+        </div>
     </div>
     
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/admin.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/main.js"></script>
 </body>

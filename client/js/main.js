@@ -14,7 +14,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     if (document.getElementById('orders-list') && currentUser) {
-        if (typeof loadMyOrders === 'function') loadMyOrders();
+        loadMyOrders();
+    }
+    
+    if (document.getElementById('admin-machines-list') && currentUser?.role === 'admin') {
+        loadAdminMachines();
+        initAdminForms();
+        initAdminTabs();
     }
     
     initModals();
