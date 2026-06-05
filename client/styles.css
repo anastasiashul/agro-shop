@@ -153,3 +153,40 @@ button:hover {
 #cart-btn:hover {
     background: #1b5e20;
 }
+.admin-tab {
+    display: none;
+    margin-top: 20px;
+}
+
+.tab-btn {
+    background: #ccc;
+    color: #333;
+    padding: 8px 16px;
+    margin-right: 5px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+}
+
+.tab-btn.active {
+    background: #2e7d32;
+    color: white;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+}
+
+.admin-table th, .admin-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.admin-table th {
+    background: #2e7d32;
+    color: white;
+}
