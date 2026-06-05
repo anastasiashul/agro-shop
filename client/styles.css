@@ -127,3 +127,29 @@ button {
 button:hover {
     background: #1b5e20;
 }
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+#cart-total {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: right;
+    padding: 10px 0;
+}
+
+#cart-btn {
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#cart-btn:hover {
+    background: #1b5e20;
+}
