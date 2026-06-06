@@ -15,8 +15,8 @@ $routes = [
         '/agro-shop/api/login' => ['AuthController', 'login'],
         '/agro-shop/api/machines' => ['MachineController', 'create'],
         '/agro-shop/api/orders' => ['OrderController', 'create'],
-        '/agro-shop/api/cart' => ['CartController', 'save'],
-        '/agro-shop/api/orders/%d/pay' => ['OrderController', 'pay']
+        '/agro-shop/api/cart' => ['CartController', 'save']
+        
     ],
     'PUT' => [
         '/agro-shop/api/machines/%d' => ['MachineController', 'update']

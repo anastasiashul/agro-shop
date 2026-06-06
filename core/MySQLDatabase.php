@@ -47,6 +47,7 @@ class MySQLDatabase {
                 username VARCHAR(64) UNIQUE NOT NULL,
                 email VARCHAR(255) UNIQUE NOT NULL,
                 name VARCHAR(128) NOT NULL,
+                age INT NULL,
                 password_hash VARCHAR(255) NOT NULL,
                 role ENUM('user', 'admin') NOT NULL DEFAULT 'user',
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

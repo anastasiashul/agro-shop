@@ -112,8 +112,9 @@ function initModals() {
             var username = document.getElementById('register-username')?.value || '';
             var email = document.getElementById('register-email')?.value || '';
             var name = document.getElementById('register-name')?.value || '';
+            var age = document.getElementById('register-age')?.value || '';
             var password = document.getElementById('register-password')?.value || '';
-            if (await register(username, email, name, password)) {
+            if (await register(username, email, name, age, password)) {
                 if (loginForm) loginForm.style.display = 'block';
                 if (registerForm) registerForm.style.display = 'none';
                 alert('Регистрация успешна! Теперь войдите.');
