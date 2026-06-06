@@ -1,43 +1,54 @@
 <?php
+require_once __DIR__ . '/../core/MySQLDatabase.php';
+
 class User {
-    private $users = [];
+    private $db;
     
     public function __construct() {
-        $this->users = [
-            ['id' => 1, 'username' => 'admin', 'email' => 'admin@example.com', 'name' => 'Admin', 'password_hash' => password_hash('password', PASSWORD_DEFAULT), 'role' => 'admin']
-        ];
+        $this->db = MySQLDatabase::getInstance()->getConnection();
     }
     
     public function findByUsername($username) {
-        foreach ($this->users as $user) {
-            if ($user['username'] === $username) {
-                return ['id' => $user['id'], 'user' => $user];
-            }
+        $stmt = $this->db->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+        if ($user) {
+            return ['id' => $user['id'], 'user' => $user];
         }
         return null;
     }
     
-    public function create($username, $email, $name, $passwordHash) {
-        foreach ($this->users as $user) {
-            if ($user['username'] === $username) {
-                return ['error' => 'Username already exists'];
-            }
-            if ($user['email'] === $email) {
-                return ['error' => 'Email already exists'];
-            }
+    public function findById($id) {
+        $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        $user = $stmt->fetch();
+        if ($user) {
+            return ['id' => $user['id'], 'user' => $user];
+        }
+        return null;
+    }
+    
+    public function create($username, $email, $name, $passwordHash, $role = 'user') {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        if ($stmt->fetchColumn() > 0) {
+            return ['error' => 'Username already exists'];
         }
         
-        $newId = count($this->users) + 1;
-        $newUser = [
-            'id' => $newId,
-            'username' => $username,
-            'email' => $email,
-            'name' => $name,
-            'password_hash' => $passwordHash,
-            'role' => 'user'
-        ];
-        $this->users[] = $newUser;
-        return ['success' => true, 'id' => $newId];
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        if ($stmt->fetchColumn() > 0) {
+            return ['error' => 'Email already exists'];
+        }
+        
+        $stmt = $this->db->prepare("INSERT INTO users (username, email, name, password_hash, role) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$username, $email, $name, $passwordHash, $role]);
+        return ['success' => true, 'id' => $this->db->lastInsertId()];
+    }
+    
+    public function getAll() {
+        $stmt = $this->db->query("SELECT id, username, email, name, role, created_at FROM users");
+        return $stmt->fetchAll();
     }
 }
 ?>

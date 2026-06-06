@@ -1,14 +1,12 @@
 <?php
+require_once __DIR__ . '/../services/MachineService.php';
+require_once __DIR__ . '/../services/AuthService.php';
+
 class MachineController {
-    private $machines = [];
+    private $machineService;
     
     public function __construct() {
-        $this->machines = [
-            ['id' => 1, 'name' => 'Трактор Беларус-82.1', 'category' => 'Тракторы', 'price' => 3500000, 'description' => 'Универсальный колесный трактор', 'stock' => 5],
-            ['id' => 2, 'name' => 'Комбайн Дон-1500', 'category' => 'Комбайны', 'price' => 8500000, 'description' => 'Зерноуборочный комбайн', 'stock' => 3],
-            ['id' => 3, 'name' => 'Плуг ПЛН-4-35', 'category' => 'Плуги', 'price' => 250000, 'description' => 'Навесной плуг', 'stock' => 10],
-        ];
-        $this->nextId = 4;
+        $this->machineService = new MachineService();
     }
     
     private function sendResponse($data, $code = 200) {
@@ -17,88 +15,73 @@ class MachineController {
         exit;
     }
     
-    private function isAdmin() {
-        $headers = getallheaders();
-        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-        $token = str_replace('Bearer ', '', $authHeader);
-        
-        if (!$token) return false;
-        
-        $decoded = base64_decode($token);
-        $parts = explode(':', $decoded);
-        return (count($parts) === 3 && $parts[2] === 'admin');
-    }
-    
     public function getAll() {
-        $this->sendResponse(['status' => 'success', 'data' => $this->machines]);
+        $machines = $this->machineService->getAll();
+        $this->sendResponse(['status' => 'success', 'message' => 'Machines list', 'data' => $machines]);
     }
     
     public function getOne($params) {
         $id = $params[0] ?? null;
-        foreach ($this->machines as $machine) {
-            if ($machine['id'] == $id) {
-                $this->sendResponse(['status' => 'success', 'data' => $machine]);
-                return;
-            }
+        
+        if (!$id) {
+            $this->sendResponse(['status' => 'error', 'message' => 'ID not provided'], 400);
         }
-        $this->sendResponse(['status' => 'error', 'message' => 'Machine not found'], 404);
+        
+        $machineData = $this->machineService->getOne($id);
+        
+        if (!$machineData) {
+            $this->sendResponse(['status' => 'error', 'message' => 'Machine not found'], 404);
+        }
+        
+        $this->sendResponse(['status' => 'success', 'message' => 'Machine details', 'data' => $machineData['machine']]);
     }
     
     public function create() {
-        if (!$this->isAdmin()) {
-            $this->sendResponse(['status' => 'error', 'message' => 'Forbidden'], 403);
-        }
-        
+        $adminUser = AuthService::requireAdmin();
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
         
-        $newMachine = [
-            'id' => $this->nextId++,
-            'name' => $input['name'] ?? '',
-            'category' => $input['category'] ?? '',
-            'price' => $input['price'] ?? 0,
-            'description' => $input['description'] ?? '',
-            'stock' => $input['stock'] ?? 0
-        ];
+        $result = $this->machineService->create($input, $adminUser);
         
-        $this->machines[] = $newMachine;
-        $this->sendResponse(['status' => 'success', 'message' => 'Machine created', 'data' => ['machine_id' => $newMachine['id']]]);
+        if (isset($result['error'])) {
+            $this->sendResponse(['status' => 'error', 'message' => $result['error']], 400);
+        }
+        
+        $this->sendResponse(['status' => 'success', 'message' => 'Machine created', 'data' => ['machine_id' => $result['machine_id']]]);
     }
     
     public function update($params) {
-        if (!$this->isAdmin()) {
-            $this->sendResponse(['status' => 'error', 'message' => 'Forbidden'], 403);
-        }
-        
+        $adminUser = AuthService::requireAdmin();
         $id = $params[0] ?? null;
-        $input = json_decode(file_get_contents('php://input'), true) ?? [];
         
-        foreach ($this->machines as &$machine) {
-            if ($machine['id'] == $id) {
-                $machine['name'] = $input['name'] ?? $machine['name'];
-                $machine['category'] = $input['category'] ?? $machine['category'];
-                $machine['price'] = $input['price'] ?? $machine['price'];
-                $machine['description'] = $input['description'] ?? $machine['description'];
-                $machine['stock'] = $input['stock'] ?? $machine['stock'];
-                $this->sendResponse(['status' => 'success', 'message' => 'Machine updated']);
-            }
+        if (!$id) {
+            $this->sendResponse(['status' => 'error', 'message' => 'ID not provided'], 400);
         }
-        $this->sendResponse(['status' => 'error', 'message' => 'Machine not found'], 404);
+        
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+        $result = $this->machineService->update($id, $input, $adminUser);
+        
+        if (isset($result['error'])) {
+            $this->sendResponse(['status' => 'error', 'message' => $result['error']], 404);
+        }
+        
+        $this->sendResponse(['status' => 'success', 'message' => 'Machine updated']);
     }
     
     public function delete($params) {
-        if (!$this->isAdmin()) {
-            $this->sendResponse(['status' => 'error', 'message' => 'Forbidden'], 403);
+        $adminUser = AuthService::requireAdmin();
+        $id = $params[0] ?? null;
+        
+        if (!$id) {
+            $this->sendResponse(['status' => 'error', 'message' => 'ID not provided'], 400);
         }
         
-        $id = $params[0] ?? null;
-        foreach ($this->machines as $key => $machine) {
-            if ($machine['id'] == $id) {
-                unset($this->machines[$key]);
-                $this->machines = array_values($this->machines);
-                $this->sendResponse(['status' => 'success', 'message' => 'Machine deleted']);
-            }
+        $result = $this->machineService->delete($id, $adminUser);
+        
+        if (isset($result['error'])) {
+            $this->sendResponse(['status' => 'error', 'message' => $result['error']], 404);
         }
-        $this->sendResponse(['status' => 'error', 'message' => 'Machine not found'], 404);
+        
+        $this->sendResponse(['status' => 'success', 'message' => 'Machine deleted']);
     }
 }
 ?>

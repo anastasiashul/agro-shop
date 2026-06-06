@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../services/OrderService.php';
+require_once __DIR__ . '/../services/AuthService.php';
 
 class OrderController {
     private $orderService;
@@ -14,38 +15,26 @@ class OrderController {
         exit;
     }
     
-    private function getUserIdFromToken() {
-        $headers = getallheaders();
-        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-        $token = str_replace('Bearer ', '', $authHeader);
-        
-        if (!$token) {
-            $this->sendResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
-        }
-        
-        $decoded = base64_decode($token);
-        $parts = explode(':', $decoded);
-        if (count($parts) !== 3) {
-            $this->sendResponse(['status' => 'error', 'message' => 'Invalid token'], 401);
-        }
-        
-        return $parts[0];
+    public function getMyOrders() {
+        $user = AuthService::requireAuth();
+        $orders = $this->orderService->getMyOrders($user['user_id']);
+        $this->sendResponse(['status' => 'success', 'message' => 'My orders', 'data' => $orders]);
     }
     
-    public function getMyOrders() {
-        $userId = $this->getUserIdFromToken();
-        $orders = $this->orderService->getMyOrders($userId);
-        $this->sendResponse(['status' => 'success', 'data' => $orders]);
+    public function getAllOrders() {
+        AuthService::requireAdmin();
+        $orders = $this->orderService->getAllOrders();
+        $this->sendResponse(['status' => 'success', 'message' => 'All orders', 'data' => $orders]);
     }
     
     public function create() {
-        $userId = $this->getUserIdFromToken();
+        $user = AuthService::requireAuth();
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
         
         $items = $input['items'] ?? [];
         $total = $input['total'] ?? 0;
         
-        $result = $this->orderService->createOrder($userId, $items, $total);
+        $result = $this->orderService->createOrder($user['user_id'], $items, $total);
         
         if (isset($result['error'])) {
             $this->sendResponse(['status' => 'error', 'message' => $result['error']], 400);
@@ -55,14 +44,14 @@ class OrderController {
     }
     
     public function pay($params) {
-        $userId = $this->getUserIdFromToken();
+        $user = AuthService::requireAuth();
         $id = $params[0] ?? null;
         
         if (!$id) {
             $this->sendResponse(['status' => 'error', 'message' => 'Order ID not provided'], 400);
         }
         
-        $result = $this->orderService->payOrder($id, $userId);
+        $result = $this->orderService->payOrder($id, $user['user_id']);
         
         if (isset($result['error'])) {
             $this->sendResponse(['status' => 'error', 'message' => $result['error']], 400);
@@ -72,14 +61,14 @@ class OrderController {
     }
     
     public function cancel($params) {
-        $userId = $this->getUserIdFromToken();
+        $user = AuthService::requireAuth();
         $id = $params[0] ?? null;
         
         if (!$id) {
             $this->sendResponse(['status' => 'error', 'message' => 'Order ID not provided'], 400);
         }
         
-        $result = $this->orderService->cancelOrder($id, $userId);
+        $result = $this->orderService->cancelOrder($id, $user['user_id']);
         
         if (isset($result['error'])) {
             $this->sendResponse(['status' => 'error', 'message' => $result['error']], 400);

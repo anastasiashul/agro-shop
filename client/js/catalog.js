@@ -5,22 +5,23 @@ async function loadCatalog() {
     
     if (data.status === 'success' && data.data && container) {
         const machines = data.data;
-        let html = '<div class="machines-grid">';
-        for (var i = 0; i < machines.length; i++) {
-            var machine = machines[i];
-            html += '<div class="machine-card">';
-            html += '<h3>' + machine.name + '</h3>';
-            html += '<p><strong>Категория:</strong> ' + machine.category + '</p>';
-            html += '<p><strong>Цена:</strong> ' + machine.price.toLocaleString() + ' руб.</p>';
-            html += '<p>' + (machine.description || '') + '</p>';
-            if (currentUser) {
-                html += '<button class="add-to-cart" data-id="' + machine.id + '" data-name="' + machine.name + '" data-price="' + machine.price + '">Добавить в корзину</button>';
-            }
-            html += '</div>';
-        }
-        html += '</div>';
-        container.innerHTML = html;
-        
+        container.innerHTML = `
+                <div class="machines-grid">
+                    ${machines.map(machine => `
+                        <div class="machine-card" data-id="${machine.id}">
+                            <h3>${machine.name}</h3>
+                            <p><strong>Категория:</strong> ${machine.category}</p>
+                            <p><strong>Цена:</strong> ${machine.price.toLocaleString()} ₽</p>
+                            <p>${machine.description || ''}</p>
+                            ${currentUser ? `
+                                <button class="add-to-cart" data-id="${machine.id}" data-name="${machine.name}" data-price="${machine.price}">Добавить в корзину</button>
+                            ` : ''}
+                            
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+                
         if (currentUser) {
             document.querySelectorAll('.add-to-cart').forEach(function(btn) {
                 btn.addEventListener('click', function() {

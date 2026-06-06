@@ -44,7 +44,7 @@ async function loadAdminMachines() {
                                 <td>${machine.stock || 0} шт.</td>
                                 <td>
                                     <button class="edit-machine" data-id="${machine.id}">Изменить</button>
-                                    <button class="delete-machine" data-id="${machine.id}">Удалить</button>
+                                    <button class="delete-machine danger" data-id="${machine.id}">Удалить</button>
                                 </td>
                             </tr>
                         `).join('')}
