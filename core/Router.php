@@ -9,7 +9,9 @@ class Router {
         $routesForMethod = $routes[$method] ?? [];
         
         foreach ($routesForMethod as $pattern => $handler) {
-            $regex = '#^' . $pattern . '$#';
+            $regex = str_replace('%d', '(\d+)', $pattern);
+            $regex = '#^' . $regex . '$#';
+            
             if (preg_match($regex, $uri, $matches)) {
                 array_shift($matches);
                 $controllerName = $handler[0];

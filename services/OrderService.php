@@ -1,20 +1,35 @@
 <?php
 require_once __DIR__ . '/../models/Order.php';
+require_once __DIR__ . '/../models/Machine.php';
+require_once __DIR__ . '/AuthService.php';
 
 class OrderService {
     private $orderModel;
+    private $machineModel;
     
     public function __construct() {
         $this->orderModel = new Order();
+        $this->machineModel = new Machine();
     }
     
     public function getMyOrders($userId) {
         return $this->orderModel->findByUserId($userId);
     }
     
+    public function getAllOrders() {
+        return $this->orderModel->getAllOrders();
+    }
+    
     public function createOrder($userId, $items, $total) {
         if (empty($items)) {
             return ['error' => 'Cart is empty'];
+        }
+        
+        foreach ($items as $item) {
+            $machine = $this->machineModel->findById($item['machine_id']);
+            if (!$machine) {
+                return ['error' => 'Machine ' . $item['machine_id'] . ' not found'];
+            }
         }
         
         $result = $this->orderModel->create($userId, $items, $total);
@@ -36,8 +51,13 @@ class OrderService {
         if ($order['user_id'] != $userId) {
             return ['error' => 'You can only pay your own orders'];
         }
+        $result = $this->orderModel->pay($orderId);
         
-        return $this->orderModel->pay($orderId);
+        if (isset($result['error'])) {
+            return $result;
+        }
+        
+        return ['success' => true];
     }
     
     public function cancelOrder($orderId, $userId) {
@@ -51,7 +71,13 @@ class OrderService {
             return ['error' => 'You can only cancel your own orders'];
         }
         
-        return $this->orderModel->cancel($orderId);
+        $result = $this->orderModel->cancel($orderId);
+        
+        if (isset($result['error'])) {
+            return $result;
+        }
+        
+        return ['success' => true];
     }
 }
 ?>

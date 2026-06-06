@@ -54,5 +54,51 @@ class AuthService {
             ]
         ];
     }
+    
+    public static function getCurrentUser() {
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+        $token = str_replace('Bearer ', '', $authHeader);
+        
+        if (!$token) {
+            return null;
+        }
+        
+        $decoded = base64_decode($token);
+        $parts = explode(':', $decoded);
+        if (count($parts) === 3) {
+            return [
+                'user_id' => $parts[0],
+                'username' => $parts[1],
+                'role' => $parts[2]
+            ];
+        }
+        return null;
+    }
+    
+    public static function requireAuth() {
+        $user = self::getCurrentUser();
+        if (!$user) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+            exit;
+        }
+        return $user;
+    }
+    
+    public static function requireAdmin() {
+        $user = self::getCurrentUser();
+        if (!$user) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+            exit;
+        }
+        if ($user['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['status' => 'error', 'message' => 'Forbidden: Admin access required']);
+            exit;
+        }
+        return $user;
+    }
 }
 ?>

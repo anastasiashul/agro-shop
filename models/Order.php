@@ -1,95 +1,101 @@
 <?php
+require_once __DIR__ . '/../core/MySQLDatabase.php';
+require_once __DIR__ . '/../core/MySQLProcedures.php';
+
 class Order {
-    private $orders = [];
-    private $orderItems = [];
-    private $nextOrderId = 1;
-    private $nextItemId = 1;
+    private $db;
+    private $procedures;
     
     public function __construct() {
-        $this->orders = [];
-        $this->orderItems = [];
+        $this->db = MySQLDatabase::getInstance()->getConnection();
+        $this->procedures = new MySQLProcedures();
     }
     
     public function findByUserId($userId) {
-        $result = [];
-        foreach ($this->orders as $order) {
-            if ($order['user_id'] == $userId) {
-                $order['items'] = $this->getItemsByOrderId($order['id']);
-                $result[] = $order;
-            }
+        $stmt = $this->db->prepare("
+            SELECT o.*, (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as items_count 
+            FROM orders o 
+            WHERE o.user_id = ? 
+            ORDER BY o.id DESC
+        ");
+        $stmt->execute([$userId]);
+        $orders = $stmt->fetchAll();
+        
+        foreach ($orders as &$order) {
+            $stmt2 = $this->db->prepare("SELECT * FROM order_items WHERE order_id = ?");
+            $stmt2->execute([$order['id']]);
+            $order['items'] = $stmt2->fetchAll();
         }
-        usort($result, function($a, $b) {
-            return $b['id'] - $a['id'];
-        });
-        return $result;
+        
+        return $orders;
     }
     
     public function findById($id) {
-        foreach ($this->orders as $order) {
-            if ($order['id'] == $id) {
-                $order['items'] = $this->getItemsByOrderId($order['id']);
-                return $order;
-            }
+        $stmt = $this->db->prepare("SELECT * FROM orders WHERE id = ?");
+        $stmt->execute([$id]);
+        $order = $stmt->fetch();
+        if ($order) {
+            $stmt2 = $this->db->prepare("SELECT * FROM order_items WHERE order_id = ?");
+            $stmt2->execute([$order['id']]);
+            $order['items'] = $stmt2->fetchAll();
+            return $order;
         }
         return null;
     }
     
-    private function getItemsByOrderId($orderId) {
-        $result = [];
-        foreach ($this->orderItems as $item) {
-            if ($item['order_id'] == $orderId) {
-                $result[] = $item;
-            }
-        }
-        return $result;
-    }
-    
     public function create($userId, $items, $total) {
-        $orderId = $this->nextOrderId++;
+        $result = $this->procedures->createOrder($userId, $total, $orderId);
         
-        $order = [
-            'id' => $orderId,
-            'user_id' => $userId,
-            'total' => $total,
-            'status' => 'pending',
-            'created_at' => date('Y-m-d H:i:s'),
-            'paid_at' => null
-        ];
-        $this->orders[] = $order;
-        
-        foreach ($items as $item) {
-            $this->orderItems[] = [
-                'id' => $this->nextItemId++,
-                'order_id' => $orderId,
-                'machine_id' => $item['machine_id'],
-                'name' => $item['name'],
-                'price' => $item['price'],
-                'quantity' => $item['quantity']
-            ];
+        if (isset($result['error'])) {
+            return ['error' => $result['error']];
         }
         
-        return ['success' => true, 'id' => $orderId];
+        try {
+            $stmt = $this->db->prepare("INSERT INTO order_items (order_id, machine_id, name, price, quantity) VALUES (?, ?, ?, ?, ?)");
+            foreach ($items as $item) {
+                $stmt->execute([$orderId, $item['machine_id'], $item['name'], $item['price'], $item['quantity']]);
+            }
+            return ['success' => true, 'id' => $orderId];
+        } catch (Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
     }
     
     public function pay($id) {
-        foreach ($this->orders as &$order) {
-            if ($order['id'] == $id && $order['status'] == 'pending') {
-                $order['status'] = 'paid';
-                $order['paid_at'] = date('Y-m-d H:i:s');
-                return ['success' => true];
-            }
+        $order = $this->findById($id);
+        if (!$order) {
+            return ['error' => 'Order not found'];
         }
-        return ['error' => 'Order not found or cannot be paid'];
+        
+        return $this->procedures->payOrder($id, $order['user_id']);
     }
     
     public function cancel($id) {
-        foreach ($this->orders as &$order) {
-            if ($order['id'] == $id && $order['status'] == 'pending') {
-                $order['status'] = 'cancelled';
-                return ['success' => true];
-            }
+        $order = $this->findById($id);
+        if (!$order) {
+            return ['error' => 'Order not found'];
         }
-        return ['error' => 'Order not found or cannot be cancelled'];
+        
+        return $this->procedures->cancelOrder($id, $order['user_id']);
+    }
+    
+    public function getAllOrders() {
+        $stmt = $this->db->prepare("
+            SELECT o.*, u.username 
+            FROM orders o 
+            JOIN users u ON o.user_id = u.id 
+            ORDER BY o.id DESC
+        ");
+        $stmt->execute();
+        $orders = $stmt->fetchAll();
+        
+        foreach ($orders as &$order) {
+            $stmt2 = $this->db->prepare("SELECT * FROM order_items WHERE order_id = ?");
+            $stmt2->execute([$order['id']]);
+            $order['items'] = $stmt2->fetchAll();
+        }
+        
+        return $orders;
     }
 }
 ?>
