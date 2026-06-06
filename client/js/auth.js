@@ -34,11 +34,16 @@ async function login(username, password) {
     return false;
 }
 
-async function register(username, email, name, password) {
+async function register(username, email, name, age, password) {
+    const dataToSend = { username, email, name, password };
+    if (age !== undefined && age !== null && age !== '' && !isNaN(age)) {
+        dataToSend.age = parseInt(age);
+    }
+
     const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, name, password })
+        body: JSON.stringify(dataToSend)
     });
     
     const data = await response.json();
@@ -51,7 +56,10 @@ async function register(username, email, name, password) {
 }
 
 function logout() {
+    fetch(`${API_URL}/logout`, { method: 'POST' }).catch(e => console.log('Logout error:', e));
     clearToken();
     currentUser = null;
+    cart = [];
+    if (typeof updateCartCount === 'function') updateCartCount();
     window.location.href = 'index.html';
 }

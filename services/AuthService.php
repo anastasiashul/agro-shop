@@ -8,9 +8,9 @@ class AuthService {
         $this->userModel = new User();
     }
     
-    public function register($username, $email, $name, $password) {
+    public function register($username, $email, $name, $age, $password) {
         if (empty($username) || empty($email) || empty($name) || empty($password)) {
-            return ['error' => 'All fields are required'];
+            return ['error' => 'All fields except age are required'];
         }
         
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -20,9 +20,17 @@ class AuthService {
         if (strlen($password) < 6) {
             return ['error' => 'Password must be at least 6 characters'];
         }
+        if ($age !== null && $age !== '') {
+            if (!is_numeric($age) || $age < 0 || $age > 150) {
+                return ['error' => 'Age must be between 0 and 150'];
+            }
+            $age = (int)$age;
+        } else {
+            $age = null;
+        }
         
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-        $result = $this->userModel->create($username, $email, $name, $passwordHash);
+        $result = $this->userModel->create($username, $email, $name, $age, $passwordHash);
         
         if (isset($result['error'])) {
             return $result;

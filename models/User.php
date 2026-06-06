@@ -28,7 +28,7 @@ class User {
         return null;
     }
     
-    public function create($username, $email, $name, $passwordHash, $role = 'user') {
+    public function create($username, $email, $name, $age, $passwordHash, $role = 'user') {
         $stmt = $this->db->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
         $stmt->execute([$username]);
         if ($stmt->fetchColumn() > 0) {
@@ -41,13 +41,13 @@ class User {
             return ['error' => 'Email already exists'];
         }
         
-        $stmt = $this->db->prepare("INSERT INTO users (username, email, name, password_hash, role) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$username, $email, $name, $passwordHash, $role]);
+        $stmt = $this->db->prepare("INSERT INTO users (username, email, name, age, password_hash, role) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$username, $email, $name, $age, $passwordHash, $role]);
         return ['success' => true, 'id' => $this->db->lastInsertId()];
     }
     
     public function getAll() {
-        $stmt = $this->db->query("SELECT id, username, email, name, role, created_at FROM users");
+        $stmt = $this->db->query("SELECT id, username, email, name, age, role, created_at FROM users");
         return $stmt->fetchAll();
     }
 }

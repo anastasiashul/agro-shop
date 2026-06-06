@@ -20,9 +20,10 @@ class AuthController {
         $username = trim($input['username'] ?? '');
         $email = trim($input['email'] ?? '');
         $name = trim($input['name'] ?? '');
+        $age = isset($input['age']) && $input['age'] !== '' ? (int)$input['age'] : null;
         $password = $input['password'] ?? '';
         
-        $result = $this->authService->register($username, $email, $name, $password);
+        $result = $this->authService->register($username, $email, $name, $age, $password);
         
         if (isset($result['error'])) {
             $this->sendResponse(['status' => 'error', 'message' => $result['error']], 400);
@@ -47,6 +48,11 @@ class AuthController {
             'token' => $result['token'],
             'user' => $result['user']
         ]]);
+    }
+    public function logout() {
+        $user = AuthService::getCurrentUser();
+        $this->authService->logout($user);
+        $this->sendResponse(['status' => 'success', 'message' => 'Logged out']);
     }
 }
 ?>
