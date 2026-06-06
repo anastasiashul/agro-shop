@@ -49,5 +49,10 @@ class AuthController {
             'user' => $result['user']
         ]]);
     }
+    public function logout() {
+        $user = AuthService::getCurrentUser();
+        $this->authService->logout($user);
+        $this->sendResponse(['status' => 'success', 'message' => 'Logged out']);
+    }
 }
 ?>

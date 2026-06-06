@@ -36,7 +36,7 @@ async function login(username, password) {
 
 async function register(username, email, name, age, password) {
     const dataToSend = { username, email, name, password };
-    if (age !== undefined && age !== null && age !== '') {
+    if (age !== undefined && age !== null && age !== '' && !isNaN(age)) {
         dataToSend.age = parseInt(age);
     }
 
@@ -56,7 +56,10 @@ async function register(username, email, name, age, password) {
 }
 
 function logout() {
+    fetch(`${API_URL}/logout`, { method: 'POST' }).catch(e => console.log('Logout error:', e));
     clearToken();
     currentUser = null;
+    cart = [];
+    if (typeof updateCartCount === 'function') updateCartCount();
     window.location.href = 'index.html';
 }

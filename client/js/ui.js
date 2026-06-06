@@ -26,65 +26,53 @@ function updateUI() {
 }
 
 function initModals() {
-    const modal = document.getElementById('auth-modal');
-    const cartModal = document.getElementById('cart-modal');
-    const loginBtn = document.getElementById('login-btn');
-    const registerBtn = document.getElementById('register-btn');
-    const cartBtn = document.getElementById('cart-btn');
-    const checkoutBtn = document.getElementById('checkout-btn');
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const switchToRegister = document.getElementById('switch-to-register');
-    const switchToLogin = document.getElementById('switch-to-login');
-    const loginSubmit = document.getElementById('login-submit');
-    const registerSubmit = document.getElementById('register-submit');
-    const logoutBtn = document.getElementById('logout-btn');
-    
-    document.querySelectorAll('.modal .close').forEach(function(close) {
-        close.addEventListener('click', function() {
+    document.querySelectorAll('.modal .close').forEach(close => {
+        close.addEventListener('click', () => {
             close.closest('.modal').style.display = 'none';
         });
     });
     
-    window.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-        if (e.target === cartModal) {
-            cartModal.style.display = 'none';
-        }
+    window.addEventListener('click', (e) => {
+        document.querySelectorAll('.modal').forEach(modal => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
     });
     
+    const cartBtn = document.getElementById('cart-btn');
+    if (cartBtn) cartBtn.addEventListener('click', showCartModal);
+    
+    const checkoutBtn = document.getElementById('checkout-btn');
+    if (checkoutBtn) checkoutBtn.addEventListener('click', checkout);
+    
+    const authModal = document.getElementById('auth-modal');
+    const loginBtn = document.getElementById('login-btn');
+    const registerBtn = document.getElementById('register-btn');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+
     if (loginBtn) {
-        loginBtn.addEventListener('click', function() {
+        loginBtn.addEventListener('click', () => {
             if (loginForm) loginForm.style.display = 'block';
             if (registerForm) registerForm.style.display = 'none';
-            if (modal) modal.style.display = 'block';
+            if (authModal) authModal.style.display = 'block';
         });
     }
-    
+
     if (registerBtn) {
-        registerBtn.addEventListener('click', function() {
+        registerBtn.addEventListener('click', () => {
             if (loginForm) loginForm.style.display = 'none';
             if (registerForm) registerForm.style.display = 'block';
-            if (modal) modal.style.display = 'block';
+            if (authModal) authModal.style.display = 'block';
         });
     }
     
-    if (cartBtn) {
-        cartBtn.addEventListener('click', function() {
-            if (typeof showCartModal === 'function') showCartModal();
-        });
-    }
-    
-    if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', function() {
-            if (typeof checkout === 'function') checkout();
-        });
-    }
+    const switchToRegister = document.getElementById('switch-to-register');
+    const switchToLogin = document.getElementById('switch-to-login');
     
     if (switchToRegister) {
-        switchToRegister.addEventListener('click', function(e) {
+        switchToRegister.addEventListener('click', (e) => {
             e.preventDefault();
             if (loginForm) loginForm.style.display = 'none';
             if (registerForm) registerForm.style.display = 'block';
@@ -92,28 +80,30 @@ function initModals() {
     }
     
     if (switchToLogin) {
-        switchToLogin.addEventListener('click', function(e) {
+        switchToLogin.addEventListener('click', (e) => {
             e.preventDefault();
             if (loginForm) loginForm.style.display = 'block';
             if (registerForm) registerForm.style.display = 'none';
         });
     }
     
+    const loginSubmit = document.getElementById('login-submit');
     if (loginSubmit) {
-        loginSubmit.addEventListener('click', function() {
-            var username = document.getElementById('login-username')?.value || '';
-            var password = document.getElementById('login-password')?.value || '';
+        loginSubmit.addEventListener('click', () => {
+            const username = document.getElementById('login-username') ? document.getElementById('login-username').value : '';
+            const password = document.getElementById('login-password') ? document.getElementById('login-password').value : '';
             login(username, password);
         });
     }
     
+    const registerSubmit = document.getElementById('register-submit');
     if (registerSubmit) {
-        registerSubmit.addEventListener('click', async function() {
-            var username = document.getElementById('register-username')?.value || '';
-            var email = document.getElementById('register-email')?.value || '';
-            var name = document.getElementById('register-name')?.value || '';
-            var age = document.getElementById('register-age')?.value || '';
-            var password = document.getElementById('register-password')?.value || '';
+        registerSubmit.addEventListener('click', async () => {
+            const username = document.getElementById('register-username') ? document.getElementById('register-username').value : '';
+            const email = document.getElementById('register-email') ? document.getElementById('register-email').value : '';
+            const name = document.getElementById('register-name') ? document.getElementById('register-name').value : '';
+            const age = document.getElementById('register-age') ? document.getElementById('register-age').value : '';
+            const password = document.getElementById('register-password') ? document.getElementById('register-password').value : '';
             if (await register(username, email, name, age, password)) {
                 if (loginForm) loginForm.style.display = 'block';
                 if (registerForm) registerForm.style.display = 'none';
@@ -122,11 +112,24 @@ function initModals() {
         });
     }
     
+    const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    
+    initAdminTabs();
+    
+    const applyFilters = document.getElementById('apply-filters');
+    if (applyFilters) {
+        applyFilters.addEventListener('click', () => {
+            if (typeof applyOrdersFilter === 'function') applyOrdersFilter();
+        });
+    }
 }
 function initAdminTabs() {
     const tabButtons = document.querySelectorAll('#admin-tabs .tab-btn');
     const machinesTab = document.getElementById('admin-machines');
+    const usersTab = document.getElementById('admin-users');
+    const ordersTab = document.getElementById('admin-orders');
+    const statsTab = document.getElementById('admin-stats');
     
     if (!tabButtons.length) return;
     
@@ -135,6 +138,9 @@ function initAdminTabs() {
             const tab = btn.dataset.tab;
             
             if (machinesTab) machinesTab.style.display = 'none';
+            if (usersTab) usersTab.style.display = 'none';
+            if (ordersTab) ordersTab.style.display = 'none';
+            if (statsTab) statsTab.style.display = 'none';
             
             tabButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -142,6 +148,20 @@ function initAdminTabs() {
             if (tab === 'machines' && machinesTab) {
                 machinesTab.style.display = 'block';
                 if (typeof loadAdminMachines === 'function') loadAdminMachines();
+            }
+            if (tab === 'users' && usersTab) {
+                usersTab.style.display = 'block';
+                if (typeof loadUsers === 'function') loadUsers();
+            }
+            if (tab === 'all-orders' && ordersTab) {
+                ordersTab.style.display = 'block';
+                if (typeof loadAllOrders === 'function') loadAllOrders();
+                if (typeof loadUsersForFilter === 'function') loadUsersForFilter();
+            }
+            if (tab === 'stats' && statsTab) {
+                statsTab.style.display = 'block';
+                if (typeof loadMachinesStats === 'function') loadMachinesStats();
+                if (typeof loadUsersStats === 'function') loadUsersStats();
             }
         });
     });

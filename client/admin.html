@@ -27,10 +27,40 @@
             <h2>Админ-панель</h2>
             <div id="admin-tabs">
                 <button class="tab-btn" data-tab="machines">Управление техникой</button>
+                <button class="tab-btn" data-tab="users">Пользователи</button>
+                <button class="tab-btn" data-tab="all-orders">Все заказы</button>
+                <button class="tab-btn" data-tab="stats">Статистика</button>
             </div>
-            <div id="admin-machines" class="admin-tab active">
+            <div id="admin-machines" class="admin-tab">
                 <button id="add-machine-btn">Добавить технику</button>
                 <div id="admin-machines-list"></div>
+            </div>
+            <div id="admin-users" class="admin-tab">
+                <button id="add-user-btn">Создать пользователя</button>
+                <div id="users-list"></div>
+            </div>
+            <div id="admin-orders" class="admin-tab">
+                <div id="admin-filters">
+                    <select id="filter-user">
+                        <option value="">Все пользователи</option>
+                    </select>
+                    <select id="filter-status">
+                        <option value="">Все статусы</option>
+                        <option value="pending">Ожидает оплаты</option>
+                        <option value="paid">Оплачен</option>
+                        <option value="cancelled">Отменён</option>
+                    </select>
+                    <button id="apply-filters">Применить</button>
+                </div>
+                <div id="admin-orders-list"></div>
+            </div>
+            <div id="admin-stats" class="admin-tab">
+                <div id="stats-content">
+                    <h3>Статистика по технике</h3>
+                    <div id="machines-stats"></div>
+                    <h3 style="margin-top: 30px;">Статистика по пользователям</h3>
+                    <div id="users-stats"></div>
+                </div>
             </div>
         </main>
         
@@ -39,7 +69,7 @@
                 <span class="close">&times;</span>
                 <h2>Корзина</h2>
                 <div id="cart-items"></div>
-                <div id="cart-total">Итого: 0 ₽</div>
+                <div id="cart-total">Итого: 0 руб.</div>
                 <button id="checkout-btn" style="display: none;">Оформить заказ</button>
             </div>
         </div>
@@ -66,13 +96,39 @@
                 </form>
             </div>
         </div>
+        
+        <div id="user-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Создать пользователя</h2>
+                <form id="user-form" novalidate>
+                    <label>Логин</label>
+                    <input type="text" id="user-username" placeholder="Логин" autocomplete="off" required>
+                    <label>Email</label>
+                    <input type="email" id="user-email" placeholder="Email" autocomplete="off" required>
+                    <label>Полное имя</label>
+                    <input type="text" id="user-name" placeholder="Полное имя" autocomplete="off" required>
+                    <label>Возраст (необязательно)</label>
+                    <input type="number" id="user-age" placeholder="Возраст" min="0" max="150">
+                    <label>Пароль</label>
+                    <input type="password" id="user-password" placeholder="Пароль (минимум 6 символов)" autocomplete="off" required>
+                    <label>Роль</label>
+                    <select id="user-role">
+                        <option value="user">Пользователь</option>
+                        <option value="admin">Администратор</option>
+                    </select>
+                    <button type="submit">Создать</button>
+                </form>
+            </div>
+        </div>
     </div>
     
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/cart.js"></script>
-    <script src="js/orders.js"></script>
+    <script src="js/catalog.js"></script>
     <script src="js/admin.js"></script>
+    <script src="js/orders.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/main.js"></script>
 </body>

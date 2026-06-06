@@ -83,21 +83,6 @@ h2 {
     margin: 8px 0;
     color: #555;
 }
-/*
-.machine-card button {
-    background: #2e7d32;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-    margin-right: 5px;
-}
-
-.machine-card button.danger {
-    background: #dc3545;
-}*/
 
 .modal {
     display: none;
@@ -128,7 +113,7 @@ h2 {
     cursor: pointer;
 }
 
-input {
+input, select, textarea {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
@@ -166,19 +151,7 @@ button:hover {
     text-align: right;
     padding: 10px 0;
 }
-/*
-#cart-btn {
-    background: #2e7d32;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-}
 
-#cart-btn:hover {
-    background: #1b5e20;
-}*/
 .admin-tab {
     display: none;
     margin-top: 20px;
@@ -198,24 +171,7 @@ button:hover {
     background: #2e7d32;
     color: white;
 }
-/*
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    background: white;
-}
 
-.admin-table th, .admin-table td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-}
-
-.admin-table th {
-    background: #2e7d32;
-    color: white;
-}*/
 table {
     width: 100%;
     border-collapse: collapse;
@@ -262,26 +218,3 @@ tr:hover {
 .delete-machine {
     background: #ee521a;
 }
-
-/*
-#orders-list table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    background: white;
-}
-
-#orders-list th, #orders-list td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-}
-
-#orders-list th {
-    background: #2e7d32;
-    color: white;
-}
-
-.cancel-order {
-    background: #f65f1f;
-}*/

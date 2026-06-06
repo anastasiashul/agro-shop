@@ -1,8 +1,8 @@
-document.addEventListener('DOMContentLoaded', function() {
-    var token = getToken();
+document.addEventListener('DOMContentLoaded', () => {
+    const token = getToken();
     if (token) {
-        var payload = atob(token);
-        var parts = payload.split(':');
+        const payload = atob(token);
+        const parts = payload.split(':');
         if (parts.length === 3) {
             currentUser = { id: parts[0], username: parts[1], role: parts[2] };
         }
@@ -17,10 +17,14 @@ document.addEventListener('DOMContentLoaded', function() {
         loadMyOrders();
     }
     
-    if (document.getElementById('admin-machines-list') && currentUser?.role === 'admin') {
+    if (document.getElementById('admin-machines-list') && currentUser && currentUser.role === 'admin') {
         loadAdminMachines();
+        loadUsers();
+        loadAllOrders();
+        loadUsersForFilter();
         initAdminForms();
-        initAdminTabs();
+        const machinesTab = document.getElementById('admin-machines');
+        if (machinesTab) machinesTab.style.display = 'block';
     }
     
     initModals();

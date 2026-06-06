@@ -1,4 +1,3 @@
-let cart = [];
 
 async function syncCartToServer() {
     if (!currentUser) return;
@@ -140,6 +139,18 @@ async function checkout() {
         alert('Корзина пуста');
         return;
     }
+
+    for (let i = 0; i < cart.length; i++) {
+        const item = cart[i];
+        const response = await fetch(`${API_URL}/machines/${item.machine_id}`);
+        const data = await response.json();
+        if (data.status === 'success' && data.data) {
+            if (data.data.stock < item.quantity) {
+                alert('Недостаточно товара: ' + item.name + '. Доступно: ' + data.data.stock);
+                return;
+            }
+        }
+    }
     
     const items = cart.map(item => ({
         machine_id: item.machine_id,
@@ -168,6 +179,14 @@ async function checkout() {
     const data = await response.json();
     if (data.status === 'success') {
         clearCart();
+        await fetch(`${API_URL}/cart`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify({ items: [] })
+        }).catch(e => console.log('Clear server cart error:', e));
         const modal = document.getElementById('cart-modal');
         if (modal) modal.style.display = 'none';
         alert('Заказ оформлен!');
