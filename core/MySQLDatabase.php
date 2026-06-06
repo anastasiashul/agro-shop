@@ -1,9 +1,10 @@
 <?php
 
 class MySQLDatabase {
+    private static $instance = null;
     private $pdo;
     
-    public function __construct() {
+    private function __construct() {
         $host = 'localhost';
         $dbname = 'agro_shop';
         $username = 'root';
@@ -23,6 +24,13 @@ class MySQLDatabase {
         } catch (PDOException $e) {
             die("Database connection failed: " . $e->getMessage());
         }
+    }
+    
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new MySQLDatabase();
+        }
+        return self::$instance;
     }
     
     public function getConnection() {
@@ -83,7 +91,7 @@ class MySQLDatabase {
                 FOREIGN KEY (machine_id) REFERENCES machines(id)
             )
         ");
-        
+
         $this->pdo->exec("
             CREATE TABLE IF NOT EXISTS carts (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -129,7 +137,6 @@ class MySQLDatabase {
             JOIN users u ON o.user_id = u.id
         ");
         
-        
         $this->pdo->exec("
             CREATE FUNCTION IF NOT EXISTS fn_user_orders_count(user_id INT)
             RETURNS INT
@@ -157,6 +164,124 @@ class MySQLDatabase {
             END
         ");
         
+        $this->pdo->exec("
+            CREATE PROCEDURE IF NOT EXISTS sp_create_order(
+                IN p_user_id INT,
+                IN p_total DECIMAL(10,2),
+                OUT p_order_id INT
+            )
+            BEGIN
+                DECLARE EXIT HANDLER FOR SQLEXCEPTION
+                BEGIN
+                    ROLLBACK;
+                    RESIGNAL;
+                END;
+                
+                START TRANSACTION;
+                
+                IF EXISTS (SELECT 1 FROM orders WHERE user_id = p_user_id AND status = 'pending') THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'У вас уже есть неоплаченный заказ';
+                END IF;
+                
+                INSERT INTO orders (user_id, total) VALUES (p_user_id, p_total);
+                SET p_order_id = LAST_INSERT_ID();
+                
+                COMMIT;
+            END
+        ");
+        
+        $this->pdo->exec("
+            CREATE PROCEDURE IF NOT EXISTS sp_pay_order(
+                IN p_order_id INT,
+                IN p_user_id INT,
+                OUT p_success BOOLEAN
+            )
+            BEGIN
+                DECLARE EXIT HANDLER FOR SQLEXCEPTION
+                BEGIN
+                    ROLLBACK;
+                    SET p_success = FALSE;
+                END;
+                START TRANSACTION;
+                UPDATE orders 
+                SET status = 'paid', paid_at = NOW() 
+                WHERE id = p_order_id AND user_id = p_user_id AND status = 'pending';
+                
+                IF ROW_COUNT() = 0 THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Заказ не найден или не может быть оплачен';
+                END IF;
+                
+                SET p_success = TRUE;
+                COMMIT;
+            END
+        ");
+        
+        $this->pdo->exec("
+            CREATE PROCEDURE IF NOT EXISTS sp_cancel_order(
+                IN p_order_id INT,
+                IN p_user_id INT,
+                OUT p_success BOOLEAN
+            )
+            BEGIN
+                DECLARE EXIT HANDLER FOR SQLEXCEPTION
+                BEGIN
+                    ROLLBACK;
+                    SET p_success = FALSE;
+                END;
+                
+                START TRANSACTION;
+                
+                UPDATE orders 
+                SET status = 'cancelled' 
+                WHERE id = p_order_id AND user_id = p_user_id AND status = 'pending';
+                
+                IF ROW_COUNT() = 0 THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Заказ не найден или не может быть отменён';
+                END IF;
+                
+                UPDATE machines m
+                JOIN order_items oi ON m.id = oi.machine_id
+                SET m.stock = m.stock + oi.quantity
+                WHERE oi.order_id = p_order_id;
+                
+                SET p_success = TRUE;
+                COMMIT;
+            END
+        ");
+        
+        $this->pdo->exec("
+            CREATE TRIGGER IF NOT EXISTS trg_update_machine_stock
+            AFTER INSERT ON order_items
+            FOR EACH ROW
+            BEGIN
+                UPDATE machines SET stock = stock - NEW.quantity WHERE id = NEW.machine_id;
+            END
+        ");
+        
+        $this->pdo->exec("
+            CREATE TRIGGER IF NOT EXISTS trg_check_price
+            BEFORE INSERT ON machines
+            FOR EACH ROW
+            BEGIN
+                IF NEW.price <= 0 THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Price must be greater than 0';
+                END IF;
+            END
+        ");
+        
+        $this->pdo->exec("
+            CREATE TRIGGER IF NOT EXISTS trg_check_stock
+            BEFORE INSERT ON order_items
+            FOR EACH ROW
+            BEGIN
+                DECLARE available_stock INT;
+                SELECT COALESCE(stock, 0) INTO available_stock FROM machines WHERE id = NEW.machine_id;
+                IF available_stock < NEW.quantity THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Not enough stock';
+                END IF;
+            END
+        ");
+        
         $check = $this->pdo->query("SELECT COUNT(*) FROM users WHERE username = 'admin'")->fetchColumn();
         if ($check == 0) {
             $hash = password_hash('password', PASSWORD_DEFAULT);
@@ -167,6 +292,7 @@ class MySQLDatabase {
             $stmt->execute([$hash]);
         }
         
+        
         $checkMachines = $this->pdo->query("SELECT COUNT(*) FROM machines")->fetchColumn();
         if ($checkMachines == 0) {
             $stmt = $this->pdo->prepare("
@@ -176,7 +302,7 @@ class MySQLDatabase {
                 ('Комбайн Дон-1500', 'Комбайны', 8500000, 'Зерноуборочный комбайн', 3),
                 ('Плуг ПЛН-4-35', 'Плуги', 250000, 'Навесной плуг для вспашки почвы', 10),
                 ('Сеялка C3-3.6', 'Сеялки', 1800000, 'Пневматическая сеялка точного высева', 4),
-                ('Культиватор КПС-4', 'Культиваторы', 450000, 'Прицепной культиватор для сплошной обработки', 7)                
+                ('Культиватор КПС-4', 'Культиваторы', 450000, 'Прицепной культиватор для сплошной обработки', 7)
             ");
             $stmt->execute();
         }
