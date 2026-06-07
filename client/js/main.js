@@ -3,10 +3,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (token) {
         const payload = atob(token);
         const parts = payload.split(':');
-        if (parts.length === 3) {
+        if (parts.length === 3 || parts.length === 4) {
             currentUser = { id: parts[0], username: parts[1], role: parts[2] };
         }
         updateUI();
+    }
+    else {
+        const isLoginPage = window.location.pathname.includes('login.html');
+        const isAdminPage = window.location.pathname.includes('admin.html');
+        const isOrdersPage = window.location.pathname.includes('orders.html');
+        
+        if (!isLoginPage && (isAdminPage || isOrdersPage)) {
+            window.location.href = 'login.html';
+            return;
+        }
     }
     
     if (document.getElementById('machines-list')) {

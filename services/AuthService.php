@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../core/Logger.php';
 
 class AuthService {
     private $userModel;
@@ -36,6 +37,7 @@ class AuthService {
             return $result;
         }
         
+        Logger::log("New user registered: $username ($email)", 'REGISTER');
         return ['success' => true, 'user_id' => $result['id']];
     }
     
@@ -47,10 +49,13 @@ class AuthService {
         $userData = $this->userModel->findByUsername($username);
         
         if (!$userData || !password_verify($password, $userData['user']['password_hash'])) {
+            Logger::log("Failed login attempt for: $username", 'AUTH_FAIL');
             return ['error' => 'Invalid username or password'];
         }
-        
-        $token = base64_encode($userData['id'] . ':' . $userData['user']['username'] . ':' . $userData['user']['role']);
+        Logger::log("User logged in: $username (role: {$userData['user']['role']})", 'AUTH_SUCCESS');
+        $expires = time() + 86400;
+        $tokenData = $userData['id'] . ':' . $userData['user']['username'] . ':' . $userData['user']['role'] . ':' . $expires;
+        $token = base64_encode($tokenData);
         
         return [
             'success' => true,
@@ -61,6 +66,13 @@ class AuthService {
                 'role' => $userData['user']['role']
             ]
         ];
+    }
+
+    public function logout($user) {
+        if ($user) {
+            Logger::log("User logged out: {$user['username']}", 'LOGOUT');
+        }
+        return ['success' => true];
     }
     
     public static function getCurrentUser() {
@@ -74,6 +86,18 @@ class AuthService {
         
         $decoded = base64_decode($token);
         $parts = explode(':', $decoded);
+        if (count($parts) === 4) {
+            $expires = (int)$parts[3];
+            if ($expires < time()) {
+                return null;
+            }
+            return [
+                'user_id' => $parts[0],
+                'username' => $parts[1],
+                'role' => $parts[2]
+            ];
+        }
+        
         if (count($parts) === 3) {
             return [
                 'user_id' => $parts[0],
@@ -81,6 +105,7 @@ class AuthService {
                 'role' => $parts[2]
             ];
         }
+        
         return null;
     }
     

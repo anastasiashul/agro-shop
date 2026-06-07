@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../services/AuthService.php';
+require_once __DIR__ . '/../core/Logger.php';
 
 class UserController {
     private $userModel;
@@ -92,6 +93,9 @@ class UserController {
             ], 400);
         }
         
+        $adminUser = AuthService::getCurrentUser();
+        Logger::log("Admin created user: $username ($email) as $role, Admin: {$adminUser['username']}", 'ADMIN_CREATE_USER');
+
         $this->sendResponse([
             'status' => 'success', 
             'message' => 'Пользователь успешно создан', 
