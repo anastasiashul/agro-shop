@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>АгроМаркет - Вход</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>АгроМаркет</h1>
+        </header>
+        
+        <main>
+            <div class="auth-container">
+                <div id="login-form">
+                    <h2>Вход</h2>
+                    <label for="login-username">Логин</label>
+                    <input type="text" id="login-username" placeholder="Введите логин">
+                    <label for="login-password">Пароль</label>
+                    <input type="password" id="login-password" placeholder="Введите пароль">
+                    <button id="login-submit">Войти</button>
+                    <p>Нет аккаунта? <a href="#" id="switch-to-register">Зарегистрироваться</a></p>
+                </div>
+                <div id="register-form" style="display: none;">
+                    <h2>Регистрация</h2>
+                        <label for="register-username">Логин</label>
+                        <input type="text" id="register-username" placeholder="Например: user123" required>
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" placeholder="user@example.com" required>
+                        <label for="register-name">Имя</label>
+                        <input type="text" id="register-name" placeholder="Ваше имя" required>
+                        <label for="register-age">Возраст (необязательно)</label>
+                        <input type="number" id="register-age" placeholder="Например: 25" min="0" max="150">
+                        <label for="register-password">Пароль</label>
+                        <input type="password" id="register-password" placeholder="Минимум 6 символов" required>
+                    <button id="register-submit">Зарегистрироваться</button>
+                    <p>Уже есть аккаунт? <a href="#" id="switch-to-login">Войти</a></p>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    
+    if (tab === 'register') {
+        if (loginForm) loginForm.style.display = 'none';
+        if (registerForm) registerForm.style.display = 'block';
+    } else {
+        if (loginForm) loginForm.style.display = 'block';
+        if (registerForm) registerForm.style.display = 'none';
+    }
+</script>
+</body>
+</html>

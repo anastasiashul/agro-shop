@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../models/Order.php';
 require_once __DIR__ . '/../models/Machine.php';
 require_once __DIR__ . '/AuthService.php';
+require_once __DIR__ . '/../core/Logger.php';
 
 class OrderService {
     private $orderModel;
@@ -37,7 +38,8 @@ class OrderService {
         if (isset($result['error'])) {
             return $result;
         }
-        
+
+        Logger::log("Order created: ID={$result['id']}, User ID={$userId}, Total={$total}", 'ORDER_CREATED');
         return ['success' => true, 'order_id' => $result['id']];
     }
     
@@ -57,6 +59,7 @@ class OrderService {
             return $result;
         }
         
+        Logger::log("Order paid: ID={$orderId}, User ID={$userId}", 'ORDER_PAID');
         return ['success' => true];
     }
     
@@ -77,6 +80,7 @@ class OrderService {
             return $result;
         }
         
+        Logger::log("Order cancelled: ID={$orderId}, User ID={$userId}", 'ORDER_CANCELLED');
         return ['success' => true];
     }
 }

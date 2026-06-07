@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Machine.php';
 require_once __DIR__ . '/AuthService.php';
+require_once __DIR__ . '/../core/Logger.php';
 
 class MachineService {
     private $machineModel;
@@ -34,6 +35,7 @@ class MachineService {
         }
         
         $result = $this->machineModel->create($name, $category, $price, $description, $image, $stock);
+        Logger::log("Machine created: ID={$result['id']}, Name={$name}, Admin={$adminUser['username']}", 'MACHINE_CREATED');
         return ['success' => true, 'machine_id' => $result['id']];
     }
     
@@ -51,11 +53,13 @@ class MachineService {
         $stock = $data['stock'] ?? $existing['machine']['stock'];
         
         $result = $this->machineModel->update($id, $name, $category, $price, $description, $image, $stock);
+        Logger::log("Machine updated: ID={$id}, Name={$name}, Admin={$adminUser['username']}", 'MACHINE_UPDATED');
         return ['success' => true];
     }
     
     public function delete($id, $adminUser) {
         $result = $this->machineModel->delete($id);
+        Logger::log("Machine deleted: ID={$id}, Admin={$adminUser['username']}", 'MACHINE_DELETED');
         return ['success' => true];
     }
 }

@@ -1,5 +1,21 @@
 function getToken() {
-    return localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    
+    try {
+        const decoded = atob(token);
+        const parts = decoded.split(':');
+        if (parts.length === 4) {
+            const expires = parseInt(parts[3]);
+            if (expires < Date.now() / 1000) {
+                clearToken();
+                return null;
+            }
+        }
+        return token;
+    } catch(e) {
+        return token;
+    }
 }
 
 function saveToken(token) {
@@ -27,6 +43,7 @@ async function login(username, password) {
     if (data.status === 'success') {
         saveToken(data.data.token);
         currentUser = data.data.user;
+        if (typeof loadCart === 'function') loadCart();
         if (typeof updateUI === 'function') updateUI();
         window.location.href = 'index.html';
         return true;
@@ -56,7 +73,12 @@ async function register(username, email, name, age, password) {
 }
 
 function logout() {
-    fetch(`${API_URL}/logout`, { method: 'POST' }).catch(e => console.log('Logout error:', e));
+    fetch(`${API_URL}/logout`, { 
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${getToken()}`
+        }
+    }).catch(e => console.log('Logout error:', e));
     clearToken();
     currentUser = null;
     cart = [];

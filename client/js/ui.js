@@ -46,31 +46,28 @@ function initModals() {
     const checkoutBtn = document.getElementById('checkout-btn');
     if (checkoutBtn) checkoutBtn.addEventListener('click', checkout);
     
-    const authModal = document.getElementById('auth-modal');
+    
     const loginBtn = document.getElementById('login-btn');
     const registerBtn = document.getElementById('register-btn');
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
-
+    
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
-            if (loginForm) loginForm.style.display = 'block';
-            if (registerForm) registerForm.style.display = 'none';
-            if (authModal) authModal.style.display = 'block';
+            window.location.href = 'login.html?tab=login';
         });
     }
 
     if (registerBtn) {
         registerBtn.addEventListener('click', () => {
-            if (loginForm) loginForm.style.display = 'none';
-            if (registerForm) registerForm.style.display = 'block';
-            if (authModal) authModal.style.display = 'block';
+            window.location.href = 'login.html?tab=register';
         });
     }
     
     const switchToRegister = document.getElementById('switch-to-register');
     const switchToLogin = document.getElementById('switch-to-login');
     
+
     if (switchToRegister) {
         switchToRegister.addEventListener('click', (e) => {
             e.preventDefault();
@@ -86,7 +83,7 @@ function initModals() {
             if (registerForm) registerForm.style.display = 'none';
         });
     }
-    
+
     const loginSubmit = document.getElementById('login-submit');
     if (loginSubmit) {
         loginSubmit.addEventListener('click', () => {
@@ -95,7 +92,7 @@ function initModals() {
             login(username, password);
         });
     }
-    
+
     const registerSubmit = document.getElementById('register-submit');
     if (registerSubmit) {
         registerSubmit.addEventListener('click', async () => {
@@ -111,11 +108,12 @@ function initModals() {
             }
         });
     }
-    
+
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
-    
-    initAdminTabs();
+    if (typeof initAdminTabs === 'function') {
+        initAdminTabs();
+    }
     
     const applyFilters = document.getElementById('apply-filters');
     if (applyFilters) {
