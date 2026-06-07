@@ -48,39 +48,66 @@
 ## Структура проекта
 
 agro-shop/
-├── api/           # API эндпоинты
-├── controllers/   # Контроллеры
-├── core/          # Ядро (БД, роутер, логгер, процедуры)
-├── models/        # Модели
-├── services/      # Бизнес-логика
-├── client/        # Фронтенд (HTML, CSS, JS)
-├── logs/          # Логи (создаётся автоматически)
-├── vendor/        # Composer зависимости
-├── composer.json
-└── README.md
+
+  api/            эндпоинты (index.php, routes.php)
+  
+  controllers/    обработка запросов
+  
+  core/           ядро (БД, роутер, логгер, процедуры)
+  
+  models/         работа с БД
+  
+  services/       бизнес-логика
+  
+  client/         фронтенд (HTML, CSS, JS)
+  
+  client/js/admin/     модули админ-панели
+    
+  logs/           логи (создаётся автоматически)
+  
+  vendor/         Composer зависимости
 
 ## API Эндпоинты
 
-Метод POST /api/register - Регистрация
-Метод POST /api/login - Вход
-Метод GET /api/machines - Список техники
-Метод GET /api/machines/%d - Карточка техники
-Метод POST /api/machines - Создание техники (admin)
-Метод PUT /api/machines/%d - Обновление техники (admin)
-Метод DELETE /api/machines/%d - Удаление техники (admin)
-Метод GET /api/cart - Получить корзину
-Метод POST /api/cart - Сохранить корзину
-Метод POST /api/orders - Создание заказа
-Метод POST /api/orders/%d/pay - Оплата заказа
-Метод DELETE /api/orders/%d - Отмена заказа
-Метод GET /api/orders - Мои заказы
-Метод GET /api/orders/all - Все заказы (admin)
-Метод GET /api/users - Список пользователей (admin)
-Метод GET /api/users/%d - Детали пользователя (admin)
-Метод POST /api/users - Создание пользователя (admin)
-Метод GET /api/stats/machines - Статистика по технике (admin)
-Метод GET /api/stats/users - Статистика по пользователям (admin)
-Метод POST /api/logout - Выход
+POST /api/register - Регистрация
+
+POST /api/login - Вход
+
+GET /api/machines - Список техники
+
+GET /api/machines/%d - Карточка техники
+
+POST /api/machines - Создание техники (admin)
+
+PUT /api/machines/%d - Обновление техники (admin)
+
+DELETE /api/machines/%d - Удаление техники (admin)
+
+GET /api/cart - Получить корзину
+
+POST /api/cart - Сохранить корзину
+
+POST /api/orders - Создание заказа
+
+POST /api/orders/%d/pay - Оплата заказа
+
+DELETE /api/orders/%d - Отмена заказа
+
+GET /api/orders - Мои заказы
+
+GET /api/orders/all - Все заказы (admin)
+
+GET /api/users - Список пользователей (admin)
+
+GET /api/users/%d - Детали пользователя (admin)
+
+POST /api/users - Создание пользователя (admin)
+
+GET /api/stats/machines - Статистика по технике (admin)
+
+GET /api/stats/users - Статистика по пользователям (admin)
+
+POST /api/logout - Выход
 
 ## Логирование
 
