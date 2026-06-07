@@ -3,6 +3,8 @@ require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../services/AuthService.php';
 require_once __DIR__ . '/../core/Logger.php';
 
+use Respect\Validation\Validator as v;
+
 class UserController {
     private $userModel;
     
@@ -57,17 +59,31 @@ class UserController {
             ], 400);
         }
         
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (!v::email()->validate($email)) {
             $this->sendResponse([
                 'status' => 'error', 
                 'message' => 'Неверный формат email'
             ], 400);
         }
         
-        if (strlen($password) < 6) {
+        if (!v::stringType()->length(6, 100)->validate($password)) {
             $this->sendResponse([
                 'status' => 'error', 
                 'message' => 'Пароль должен быть не менее 6 символов'
+            ], 400);
+        }
+
+        if (!v::stringType()->regex('/^[a-zA-Z0-9_]{1,32}$/')->validate($username)) {
+            $this->sendResponse([
+                'status' => 'error', 
+                'message' => 'Логин должен содержать 1-32 символа (латиница, цифры, _)'
+            ], 400);
+        }
+
+        if (!v::stringType()->regex('/^[a-zA-Zа-яА-ЯёЁ\s\-]{1,128}$/u')->validate($name)) {
+            $this->sendResponse([
+                'status' => 'error', 
+                'message' => 'Имя может содержать только буквы, пробелы и дефисы (1-128 символов)'
             ], 400);
         }
         

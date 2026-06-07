@@ -1,0 +1,38 @@
+# Composer
+/vendor/
+composer.lock
+composer.phar
+
+# Logs
+/logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Backup files
+*.bak
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database backups (если случайно создадите)
+*.sql
+*.bak
+*.db
+
+# PHP errors log
+php_errors.log
+error_log

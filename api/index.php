@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../vendor/autoload.php';
 date_default_timezone_set('Europe/Moscow');
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");

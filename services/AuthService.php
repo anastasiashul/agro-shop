@@ -2,6 +2,8 @@
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../core/Logger.php';
 
+use Respect\Validation\Validator as v;
+
 class AuthService {
     private $userModel;
     
@@ -14,13 +16,22 @@ class AuthService {
             return ['error' => 'All fields except age are required'];
         }
         
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return ['error' => 'Invalid email format'];
+        if (!v::email()->validate($email)) {
+            return ['error' => 'Неверный формат email'];
         }
         
-        if (strlen($password) < 6) {
-            return ['error' => 'Password must be at least 6 characters'];
+        if (!v::stringType()->length(6, 100)->validate($password)) {
+            return ['error' => 'Пароль должен быть не менее 6 символов'];
         }
+
+        if (!v::stringType()->length(1, 32)->validate($username)) {
+            return ['error' => 'Логин должен содержать 1-32 символа'];
+        }
+
+        if (!v::stringType()->length(1, 128)->validate($name)) {
+            return ['error' => 'Имя должно содержать хотя бы 1 символ'];
+        }
+
         if ($age !== null && $age !== '') {
             if (!is_numeric($age) || $age < 0 || $age > 150) {
                 return ['error' => 'Age must be between 0 and 150'];

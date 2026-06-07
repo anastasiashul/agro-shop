@@ -32,7 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
         loadUsers();
         loadAllOrders();
         loadUsersForFilter();
-        initAdminForms();
+        initAdminMachineForm();
+        initAdminUserForm();
+        initAdminFilters();
         const machinesTab = document.getElementById('admin-machines');
         if (machinesTab) machinesTab.style.display = 'block';
     }
